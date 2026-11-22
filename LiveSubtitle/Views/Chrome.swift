@@ -36,7 +36,7 @@ struct TopBar: View {
             .accessibilityLabel("显示设置")
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.top, 12)
         .animation(.smooth(duration: 0.3), value: transcriber.isListening)
     }
 }
@@ -165,7 +165,7 @@ struct BottomBar: View {
                     .opacity(canShare ? 1 : 0.35)
             }
         }
-        .padding(.bottom, 20)
+        .padding(.bottom, 24)
     }
 }
 
