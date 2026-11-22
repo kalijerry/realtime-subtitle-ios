@@ -53,6 +53,7 @@ final class LiveTranscriber {
     private var analyzer: SpeechAnalyzer?
     private var inputContinuation: AsyncStream<AnalyzerInput>.Continuation?
     private var resultsTask: Task<Void, Never>?
+    private var interruptionTask: Task<Void, Never>?
 
     init() {
         let saved = UserDefaults.standard.string(forKey: "transcriberLocale")
@@ -151,6 +152,7 @@ final class LiveTranscriber {
 
             startedAt = .now
             phase = .listening
+            observeInterruptions()
         } catch {
             await tearDown()
             fail(error)
@@ -226,7 +228,23 @@ final class LiveTranscriber {
         phase = .failed(message)
     }
 
+    /// 锁屏后靠后台音频模式继续转写；但来电、闹钟等会打断麦克风，这时自动停止并保存已有字幕。
+    private func observeInterruptions() {
+        interruptionTask?.cancel()
+        interruptionTask = Task { [weak self] in
+            let notifications = NotificationCenter.default.notifications(named: AVAudioSession.interruptionNotification)
+            for await note in notifications {
+                guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+                      AVAudioSession.InterruptionType(rawValue: raw) == .began else { continue }
+                await self?.stop()
+                break
+            }
+        }
+    }
+
     private func tearDown() async {
+        interruptionTask?.cancel()
+        interruptionTask = nil
         capture.stop()
         inputContinuation?.finish()
         inputContinuation = nil

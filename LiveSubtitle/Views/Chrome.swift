@@ -139,19 +139,18 @@ struct LanguageMenu: View {
 
 struct BottomBar: View {
     let transcriber: LiveTranscriber
+    let onHistory: () -> Void
     let onExport: () -> Void
-    let onClear: () -> Void
 
-    private var canEdit: Bool {
-        !transcriber.isListening && !transcriber.phase.isBusy && !transcriber.segments.isEmpty
+    private var canShare: Bool {
+        !transcriber.phase.isBusy && !transcriber.segments.isEmpty
     }
 
     var body: some View {
         GlassEffectContainer(spacing: 24) {
             HStack(spacing: 36) {
-                CircleIconButton(symbol: "square.and.arrow.up", label: "导出", action: onExport)
-                    .disabled(!canEdit)
-                    .opacity(canEdit ? 1 : 0.35)
+                CircleIconButton(symbol: "clock.arrow.circlepath", label: "历史记录", action: onHistory)
+                    .disabled(transcriber.phase.isBusy)
 
                 RecordButton(
                     isListening: transcriber.isListening,
@@ -161,9 +160,9 @@ struct BottomBar: View {
                     Task { await transcriber.toggle() }
                 }
 
-                CircleIconButton(symbol: "trash", label: "清空", action: onClear)
-                    .disabled(!canEdit)
-                    .opacity(canEdit ? 1 : 0.35)
+                CircleIconButton(symbol: "square.and.arrow.up", label: "分享", action: onExport)
+                    .disabled(!canShare)
+                    .opacity(canShare ? 1 : 0.35)
             }
         }
         .padding(.bottom, 20)

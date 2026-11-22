@@ -25,8 +25,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Xcode 版本
-        run: xcodebuild -version
+      - name: 选用最新 Xcode
+        run: |
+          # 苹果要求用最新 SDK 上传（ITMS-90725），优先选机器上版本号最高的正式版 Xcode
+          ls -d /Applications/Xcode*.app
+          LATEST=$(ls -d /Applications/Xcode_[0-9]*.app | grep -viE 'beta|rc' | sort -V | tail -1)
+          echo "选用 $LATEST"
+          sudo xcode-select -s "$LATEST"
+          xcodebuild -version
 
       - name: 编译
         run: |
@@ -72,6 +78,16 @@ jobs:
 
       - uses: actions/checkout@v4
         if: steps.secrets.outputs.ready == 'true'
+
+      - name: 选用最新 Xcode
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          # 苹果要求用最新 SDK 上传（ITMS-90725），优先选机器上版本号最高的正式版 Xcode
+          ls -d /Applications/Xcode*.app
+          LATEST=$(ls -d /Applications/Xcode_[0-9]*.app | grep -viE 'beta|rc' | sort -V | tail -1)
+          echo "选用 $LATEST"
+          sudo xcode-select -s "$LATEST"
+          xcodebuild -version
 
       - name: 写入 API Key
         if: steps.secrets.outputs.ready == 'true'

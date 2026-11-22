@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 @main
@@ -6,6 +7,7 @@ struct LiveSubtitleApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: Recording.self)
     }
 }
 
