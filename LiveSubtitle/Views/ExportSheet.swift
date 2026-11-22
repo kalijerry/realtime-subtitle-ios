@@ -5,7 +5,6 @@ struct ExportSheet: View {
     let transcript: Transcript
 
     @Environment(\.dismiss) private var dismiss
-    @State private var files: [ExportFormat: URL] = [:]
     @State private var copied = false
 
     var body: some View {
@@ -54,7 +53,6 @@ struct ExportSheet: View {
                     Button("完成") { dismiss() }
                 }
             }
-            .task { prepareFiles() }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
@@ -82,7 +80,6 @@ struct ExportSheet: View {
         .frame(maxWidth: .infinity)
     }
 
-    @ViewBuilder
     private func row(for format: ExportFormat) -> some View {
         let content = HStack(spacing: 14) {
             Image(systemName: format.symbol)
@@ -106,23 +103,11 @@ struct ExportSheet: View {
                 .foregroundStyle(.tint)
         }
 
-        if let url = files[format] {
-            ShareLink(
-                item: url,
-                preview: SharePreview(url.lastPathComponent, image: Image(systemName: format.symbol))
-            ) {
-                content
-            }
-        } else {
-            content.opacity(0.4)
+        return Button {
+            SharePresenter.share(transcript, as: format)
+        } label: {
+            content.contentShape(Rectangle())
         }
-    }
-
-    private func prepareFiles() {
-        var result: [ExportFormat: URL] = [:]
-        for format in ExportFormat.allCases {
-            result[format] = try? TranscriptExporter.writeFile(transcript, as: format)
-        }
-        files = result
+        .buttonStyle(.plain)
     }
 }
