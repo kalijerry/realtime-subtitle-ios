@@ -165,7 +165,7 @@ final class LiveTranscriber {
         do {
             try await analyzer?.finalizeAndFinishThroughEndOfInput()
         } catch {
-            analyzer?.cancelAndFinishNow()
+            await analyzer?.cancelAndFinishNow()
         }
         await resultsTask?.value
         commitVolatileText()
