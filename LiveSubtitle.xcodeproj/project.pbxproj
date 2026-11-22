@@ -10,9 +10,22 @@
 		5A1C00000000000000000001 /* LiveSubtitle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiveSubtitle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5A1C00000000000000000010 /* Exceptions for "LiveSubtitle" folder in "LiveSubtitle" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5A1C00000000000000000006 /* LiveSubtitle */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5A1C00000000000000000002 /* LiveSubtitle */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5A1C00000000000000000010 /* Exceptions for "LiveSubtitle" folder in "LiveSubtitle" target */,
+			);
 			path = LiveSubtitle;
 			sourceTree = "<group>";
 		};
@@ -197,6 +210,7 @@
 				DEVELOPMENT_TEAM = RLJ7LHQHT8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LiveSubtitle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "实时字幕";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
@@ -232,6 +246,7 @@
 				DEVELOPMENT_TEAM = RLJ7LHQHT8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LiveSubtitle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "实时字幕";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
