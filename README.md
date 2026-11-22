@@ -43,8 +43,8 @@ LiveSubtitle/
 
 注意：
 
-1. API Key 的角色需要是 **Admin**（云端签名需要创建分发证书）。
-2. 需要先在 App Store Connect 里用 Bundle ID `com.kalijerry.realtimesubtitle` 创建 App 记录，否则上传会被拒。
+1. 云端签名需要 API Key 有创建分发证书的权限。当前的 Key 是 **App Manager** 角色；如果「签名并上传」这一步报权限错误（例如 cloud signing permission），请在 App Store Connect 重新生成一个 **Admin** 角色的 Key，替换 `ASC_KEY_ID` 和 `ASC_KEY_P8`。
+2. App Store Connect 里的 App 记录已创建（Bundle ID `com.kalijerry.realtimesubtitle`），Team ID `RLJ7LHQHT8` 已写进工程。
 3. 没配好 Secret 时，上传这一步会自动跳过，不会让 CI 变红。
 
 ## 系统要求
