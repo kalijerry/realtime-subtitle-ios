@@ -58,7 +58,7 @@ struct SettingsSheet: View {
                     Label("使用 iOS 26 SpeechAnalyzer，全程在本机识别", systemImage: "lock.shield")
                     Label("音频不会上传到任何服务器", systemImage: "icloud.slash")
                 } footer: {
-                    Text("录音时屏幕保持常亮；手动锁屏后也会在后台继续转写。轻点字幕区域可隐藏控件。")
+                    Text("录音时屏幕保持常亮；手动锁屏后也会在后台继续转写。双击字幕区域进入专注模式（只留字幕），轻点恢复。")
                 }
             }
             .navigationTitle("显示设置")

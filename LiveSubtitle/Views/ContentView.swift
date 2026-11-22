@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var showExport = false
     @State private var showHistory = false
     @State private var savedToast = false
+    @State private var focusHint = false
     /// 当前这次录音对应的记录；每确定一句就更新一次
     @State private var currentRecording: Recording?
 
@@ -44,9 +45,17 @@ struct ContentView: View {
                         transcriber: transcriber,
                         onSettings: { showSettings = true }
                     )
+                    .guardZone(extra: EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
                 Spacer(minLength: 0)
+                if focusHint {
+                    Text("轻点屏幕显示控件")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .padding(.bottom, 24)
+                        .transition(.opacity)
+                }
                 if savedToast {
                     Label("已保存到历史记录", systemImage: "checkmark.circle.fill")
                         .font(.subheadline.weight(.semibold))
@@ -63,6 +72,7 @@ struct ContentView: View {
                         onHistory: { showHistory = true },
                         onExport: { showExport = true }
                     )
+                    .guardZone(extra: EdgeInsets(top: 28, leading: 0, bottom: 0, trailing: 0))
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
@@ -70,8 +80,15 @@ struct ContentView: View {
             StatusOverlay(transcriber: transcriber)
         }
         .contentShape(Rectangle())
+        // 双击进入专注模式（只留字幕），避免单击误触；专注模式下轻点任意处恢复
+        .onTapGesture(count: 2) {
+            guard chromeVisible else { return }
+            withAnimation(.smooth(duration: 0.3)) { chromeVisible = false }
+            flashFocusHint()
+        }
         .onTapGesture {
-            withAnimation(.smooth(duration: 0.3)) { chromeVisible.toggle() }
+            guard !chromeVisible else { return }
+            withAnimation(.smooth(duration: 0.3)) { chromeVisible = true }
         }
         .animation(.smooth(duration: 0.4), value: transcriber.hasContent)
         .preferredColorScheme(.dark)
@@ -125,6 +142,14 @@ struct ContentView: View {
         try? context.save()
     }
 
+    private func flashFocusHint() {
+        withAnimation(.smooth) { focusHint = true }
+        Task {
+            try? await Task.sleep(for: .seconds(1.8))
+            withAnimation(.smooth(duration: 0.6)) { focusHint = false }
+        }
+    }
+
     private func flashSavedToast() {
         withAnimation(.smooth) { savedToast = true }
         Task {
@@ -137,4 +162,16 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .modelContainer(for: Recording.self, inMemory: true)
+}
+
+private extension View {
+    /// 防误触区：控件栏周围一圈（含额外留白）吞掉点击，不会误触发专注模式。
+    func guardZone(extra: EdgeInsets) -> some View {
+        self
+            .frame(maxWidth: .infinity)
+            .padding(extra)
+            .contentShape(Rectangle())
+            .onTapGesture(count: 2) {}
+            .onTapGesture {}
+    }
 }
