@@ -1,0 +1,92 @@
+import SwiftUI
+
+/// 全屏黑底字幕主界面。
+/// 轻点屏幕可以隐藏 / 显示控件，只留下字幕本身。
+struct ContentView: View {
+    @State private var transcriber = LiveTranscriber()
+    @State private var chromeVisible = true
+    @State private var showSettings = false
+    @State private var showExport = false
+    @State private var confirmClear = false
+
+    @AppStorage(DisplaySettings.fontSizeKey) private var fontSize = DisplaySettings.defaultFontSize
+    @AppStorage(DisplaySettings.alignmentKey) private var alignment = SubtitleAlignment.leading
+    @AppStorage(DisplaySettings.fadeHistoryKey) private var fadeHistory = true
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            if transcriber.hasContent {
+                SubtitleStage(
+                    segments: transcriber.segments,
+                    volatileText: transcriber.volatileText,
+                    fontSize: fontSize,
+                    alignment: alignment,
+                    fadeHistory: fadeHistory,
+                    topInset: chromeVisible ? 96 : 40,
+                    bottomInset: chromeVisible ? 190 : 60
+                )
+                .transition(.opacity)
+            } else {
+                EmptyStateView(isListening: transcriber.isListening, locale: transcriber.locale)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+            }
+
+            VStack(spacing: 0) {
+                if chromeVisible {
+                    TopBar(
+                        transcriber: transcriber,
+                        onSettings: { showSettings = true }
+                    )
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                Spacer(minLength: 0)
+                if chromeVisible {
+                    BottomBar(
+                        transcriber: transcriber,
+                        onExport: { showExport = true },
+                        onClear: { confirmClear = true }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+
+            StatusOverlay(transcriber: transcriber)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.smooth(duration: 0.3)) { chromeVisible.toggle() }
+        }
+        .animation(.smooth(duration: 0.4), value: transcriber.hasContent)
+        .preferredColorScheme(.dark)
+        .statusBarHidden(!chromeVisible)
+        .persistentSystemOverlays(chromeVisible ? .automatic : .hidden)
+        .sensoryFeedback(trigger: transcriber.isListening) { _, listening in
+            listening ? .start : .stop
+        }
+        .onChange(of: transcriber.isListening) { _, listening in
+            // 录音时保持屏幕常亮；停止后若控件被隐藏，自动唤回，方便导出
+            UIApplication.shared.isIdleTimerDisabled = listening
+            if !listening { withAnimation(.smooth) { chromeVisible = true } }
+        }
+        .task { await transcriber.loadLocales() }
+        .sheet(isPresented: $showSettings) {
+            SettingsSheet(transcriber: transcriber)
+        }
+        .sheet(isPresented: $showExport) {
+            ExportSheet(transcript: transcriber.transcript)
+        }
+        .confirmationDialog("清空当前字幕？", isPresented: $confirmClear, titleVisibility: .visible) {
+            Button("清空", role: .destructive) {
+                withAnimation(.smooth) { transcriber.clear() }
+            }
+        } message: {
+            Text("清空后无法恢复。如需保留，请先导出。")
+        }
+    }
+}
+
+#Preview {
+    ContentView()
+}
